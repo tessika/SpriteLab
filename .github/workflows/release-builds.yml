@@ -15,40 +15,47 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
         with:
-          distribution: 'temurin'
           java-version: '21'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
           cache: 'maven'
           
       - name: Build with Maven
-        run: mvn clean package -DskipTests
+        run: mvn -B clean package --file pom.xml
         
       - name: Download FFmpeg for Linux
         run: |
-          mkdir -p bin
+          mkdir -p staging/bin
           wget -O ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
           tar -xf ffmpeg.tar.xz
-          mv ffmpeg-*-amd64-static/ffmpeg bin/ffmpeg
-          chmod +x bin/ffmpeg
+          mv ffmpeg-*-amd64-static/ffmpeg staging/bin/ffmpeg
+          chmod +x staging/bin/ffmpeg
           rm -rf ffmpeg.tar.xz ffmpeg-*-amd64-static
+          
+      - name: Copy artifacts
+        run: |
+          cp target/SpriteLab.jar staging/SpriteLab-linux-amd64.jar
+          cp run.sh staging/ || true
+          cp README.md staging/ || cp Readme.md staging/ || true
+          cp LICENSE staging/ || true
           
       - name: Create release package
         run: |
-          mkdir -p release/SpriteLab-Linux-amd64
-          cp target/SpriteLab.jar release/SpriteLab-Linux-amd64/
-          cp -r bin release/SpriteLab-Linux-amd64/
-          cp run.sh release/SpriteLab-Linux-amd64/
-          cp README.md release/SpriteLab-Linux-amd64/ || cp Readme.md release/SpriteLab-Linux-amd64/ || true
-          cp LICENSE release/SpriteLab-Linux-amd64/ || true
-          cd release
-          tar -czf SpriteLab-Linux-amd64.tar.gz SpriteLab-Linux-amd64
+          cd staging
+          tar -czf SpriteLab-Linux-amd64.tar.gz *
+          mv SpriteLab-Linux-amd64.tar.gz ..
           
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
         with:
-          files: ./release/SpriteLab-Linux-amd64.tar.gz
+          files: SpriteLab-Linux-amd64.tar.gz
+          
+      - name: Clean staging
+        run: rm -fr staging
 
   build-macos:
     name: Build macOS (arm64)
@@ -60,37 +67,44 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
         with:
-          distribution: 'temurin'
           java-version: '21'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
           cache: 'maven'
           
       - name: Build with Maven
-        run: mvn clean package -DskipTests
+        run: mvn -B clean package --file pom.xml
         
       - name: Download FFmpeg for macOS ARM64
         run: |
-          mkdir -p bin
+          mkdir -p staging/bin
           # Download FFmpeg static build for macOS ARM64
           wget -O ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip
-          unzip -j ffmpeg.zip -d bin/
-          chmod +x bin/ffmpeg
+          unzip -j ffmpeg.zip -d staging/bin/
+          chmod +x staging/bin/ffmpeg
           rm ffmpeg.zip
+          
+      - name: Copy artifacts
+        run: |
+          cp target/SpriteLab.jar staging/SpriteLab-macos-arm64.jar
+          cp run.sh staging/ || true
+          cp README.md staging/ || cp Readme.md staging/ || true
+          cp LICENSE staging/ || true
           
       - name: Create release package
         run: |
-          mkdir -p release/SpriteLab-macOS-arm64
-          cp target/SpriteLab.jar release/SpriteLab-macOS-arm64/
-          cp -r bin release/SpriteLab-macOS-arm64/
-          cp run.sh release/SpriteLab-macOS-arm64/
-          cp README.md release/SpriteLab-macOS-arm64/ || cp Readme.md release/SpriteLab-macOS-arm64/ || true
-          cp LICENSE release/SpriteLab-macOS-arm64/ || true
-          cd release
-          tar -czf SpriteLab-macOS-arm64.tar.gz SpriteLab-macOS-arm64
+          cd staging
+          tar -czf SpriteLab-macOS-arm64.tar.gz *
+          mv SpriteLab-macOS-arm64.tar.gz ..
           
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
         with:
-          files: ./release/SpriteLab-macOS-arm64.tar.gz
+          files: SpriteLab-macOS-arm64.tar.gz
+          
+      - name: Clean staging
+        run: rm -fr staging
