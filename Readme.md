@@ -101,4 +101,28 @@ mvn clean package
 mvn -Pnative clean package
 ```
 
+### GitHub Actions & Release Process
+
+The repository includes automated build workflows:
+
+* **CI Build** (`.github/workflows/ci-build.yml`): Runs on every push/PR to test both JAR and native builds for Linux and macOS
+* **Release Builds** (`.github/workflows/release-builds.yml`): Automatically creates distribution packages on GitHub releases
+
+**To create a new release:**
+1. Create a new tag: `git tag v0.3.2`
+2. Push the tag: `git push origin v0.3.2`
+3. Create a GitHub release from the tag
+4. The workflow will automatically build and attach:
+   - `SpriteLab-Linux-amd64.tar.gz` (Linux native binary + FFmpeg)
+   - `SpriteLab-macOS-arm64.tar.gz` (macOS ARM64 native binary + FFmpeg)
+
+**GraalVM Native Image Configuration:**
+
+JavaFX applications require special configuration for GraalVM native-image. The configuration files are located in:
+- `src/main/resources/META-INF/native-image/com.fedeiatech.spritelab/SpriteLab/`
+  - `reflect-config.json` - Reflection configuration for JavaFX classes
+  - `jni-config.json` - JNI configuration for native JavaFX components
+  - `resource-config.json` - Resource includes (FXML, CSS, images)
+  - `native-image.properties` - Build arguments and initialization settings
+
 Developed by **FedeiaTech**.
