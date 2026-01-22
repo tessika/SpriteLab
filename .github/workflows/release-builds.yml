@@ -1,5 +1,9 @@
 name: Release Builds
 
+permissions:
+  contents: write
+  packages: write
+  
 on:
   release:
     types: [published]
