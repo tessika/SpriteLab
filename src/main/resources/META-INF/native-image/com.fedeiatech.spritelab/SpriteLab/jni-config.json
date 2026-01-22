@@ -1,0 +1,26 @@
+[
+  {
+    "name": "com.sun.glass.ui.mac.MacApplication"
+  },
+  {
+    "name": "com.sun.glass.ui.mac.MacView"
+  },
+  {
+    "name": "com.sun.glass.ui.gtk.GtkApplication"
+  },
+  {
+    "name": "com.sun.glass.ui.gtk.GtkView"
+  },
+  {
+    "name": "com.sun.prism.es2.GLContext"
+  },
+  {
+    "name": "com.sun.prism.es2.GLDrawable"
+  },
+  {
+    "name": "com.sun.prism.es2.GLFactory"
+  },
+  {
+    "name": "com.sun.prism.es2.GLPixelFormat"
+  }
+]

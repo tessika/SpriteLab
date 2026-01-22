@@ -105,6 +105,9 @@
                         <configuration>
                             <imageName>SpriteLab</imageName>
                             <mainClass>${exec.mainClass}</mainClass>
+                            <buildArgs>
+                                <buildArg>--verbose</buildArg>
+                            </buildArgs>
                         </configuration>
                     </plugin>
                 </plugins>
