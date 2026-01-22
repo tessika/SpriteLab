@@ -49,8 +49,10 @@ jobs:
       - name: Copy artifacts
         run: |
           cp target/SpriteLab staging/SpriteLab
+          cp run-native.sh staging/ || true
           cp README.md staging/ || cp Readme.md staging/ || true
           cp LICENSE staging/ || true
+          chmod +x staging/SpriteLab staging/run-native.sh || true
           
       - name: Create release package
         run: |
@@ -110,8 +112,10 @@ jobs:
       - name: Copy artifacts
         run: |
           cp target/SpriteLab staging/SpriteLab
+          cp run-native.sh staging/ || true
           cp README.md staging/ || cp Readme.md staging/ || true
           cp LICENSE staging/ || true
+          chmod +x staging/SpriteLab staging/run-native.sh || true
           
       - name: Create release package
         run: |
