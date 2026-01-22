@@ -8,6 +8,8 @@ jobs:
   build-linux:
     name: Build Linux (amd64)
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to upload release assets
     
     steps:
       - name: Checkout code
@@ -51,6 +53,8 @@ jobs:
   build-macos:
     name: Build macOS (arm64)
     runs-on: macos-14  # macOS 14 runs on Apple Silicon (arm64)
+    permissions:
+      contents: write  # Required to upload release assets
     
     steps:
       - name: Checkout code
