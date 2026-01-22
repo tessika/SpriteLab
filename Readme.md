@@ -120,9 +120,9 @@ The repository includes automated build workflows:
 
 JavaFX applications require special configuration for GraalVM native-image. The configuration files are located in:
 - `src/main/resources/META-INF/native-image/com.fedeiatech.spritelab/SpriteLab/`
-  - `reflect-config.json` - Reflection configuration for JavaFX classes
+  - `reflect-config.json` - Reflection configuration for JavaFX internal classes
   - `jni-config.json` - JNI configuration for native JavaFX components
-  - `resource-config.json` - Resource includes (FXML, CSS, images)
-  - `native-image.properties` - Build arguments and initialization settings
+  - `resource-config.json` - Resource includes for FXML, CSS, and images
+  - `native-image.properties` - Build arguments and class initialization settings
 
 Developed by **FedeiaTech**.

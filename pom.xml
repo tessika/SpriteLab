@@ -107,8 +107,6 @@
                             <mainClass>${exec.mainClass}</mainClass>
                             <buildArgs>
                                 <buildArg>--verbose</buildArg>
-                                <buildArg>--no-fallback</buildArg>
-                                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                             </buildArgs>
                         </configuration>
                     </plugin>
