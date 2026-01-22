@@ -59,7 +59,25 @@ This tool is built for **creators**. It serves as the ideal bridge for:
 
 ---
 
-## Installation (RAR Release)
+## Installation
+
+### Binary Releases (Recommended - No Java Required)
+
+Native binary releases are available for Linux and macOS from the [GitHub Releases](https://github.com/katamini/SpriteLab/releases) page. These are standalone executables that **do not require Java** to be installed.
+
+**Linux (amd64):**
+1. Download `SpriteLab-Linux-amd64.tar.gz` from the latest release
+2. Extract: `tar -xzf SpriteLab-Linux-amd64.tar.gz`
+3. Run: `./run-native.sh` or `./SpriteLab`
+
+**macOS (arm64/Apple Silicon):**
+1. Download `SpriteLab-macOS-arm64.tar.gz` from the latest release
+2. Extract: `tar -xzf SpriteLab-macOS-arm64.tar.gz`
+3. Run: `./run-native.sh` or `./SpriteLab`
+
+Both packages include FFmpeg binaries in the `bin` folder.
+
+### Alternative Installation (RAR Release - Windows)
 
 1. Download the `.rar` file from [Itch.io](https://fedeiatech.itch.io/spritelab).
 2. Extract the contents (Ensure the `bin` folder containing `ffmpeg.exe` is in the same directory).
@@ -72,5 +90,15 @@ This tool is built for **creators**. It serves as the ideal bridge for:
 * **Language:** Java 21 (JavaFX).
 * **Dependencies:** FFmpeg (Local binaries required in `/bin`).
 * **License:** MIT.
+
+**Building from source:**
+
+```bash
+# Build JAR (requires Java 21)
+mvn clean package
+
+# Build native binary (requires GraalVM 21 with native-image)
+mvn -Pnative clean package
+```
 
 Developed by **FedeiaTech**.
