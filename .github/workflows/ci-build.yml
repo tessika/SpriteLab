@@ -30,7 +30,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           cache: 'maven'
           
-      - name: Build with Maven
+      - name: Build JAR with Maven
         run: mvn -B clean package --file pom.xml
         
       - name: Verify JAR was created
@@ -39,8 +39,21 @@ jobs:
             echo "Error: SpriteLab.jar was not created"
             exit 1
           fi
-          echo "Build successful: SpriteLab.jar created"
+          echo "JAR build successful: SpriteLab.jar created"
           ls -lh target/SpriteLab.jar
+          
+      - name: Build Native Binary with Maven
+        run: mvn -B -Pnative package --file pom.xml
+        
+      - name: Verify native binary was created
+        run: |
+          if [ ! -f target/SpriteLab ]; then
+            echo "Error: Native binary SpriteLab was not created"
+            exit 1
+          fi
+          echo "Native binary created successfully"
+          ls -lh target/SpriteLab
+          file target/SpriteLab
         
       - name: Download FFmpeg for Linux
         run: |
@@ -61,8 +74,7 @@ jobs:
           
       - name: Copy artifacts
         run: |
-          cp target/SpriteLab.jar staging/SpriteLab-linux-amd64.jar
-          cp run.sh staging/ || true
+          cp target/SpriteLab staging/SpriteLab
           cp README.md staging/ || cp Readme.md staging/ || true
           cp LICENSE staging/ || true
           
@@ -100,7 +112,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           cache: 'maven'
           
-      - name: Build with Maven
+      - name: Build JAR with Maven
         run: mvn -B clean package --file pom.xml
         
       - name: Verify JAR was created
@@ -109,8 +121,21 @@ jobs:
             echo "Error: SpriteLab.jar was not created"
             exit 1
           fi
-          echo "Build successful: SpriteLab.jar created"
+          echo "JAR build successful: SpriteLab.jar created"
           ls -lh target/SpriteLab.jar
+          
+      - name: Build Native Binary with Maven
+        run: mvn -B -Pnative package --file pom.xml
+        
+      - name: Verify native binary was created
+        run: |
+          if [ ! -f target/SpriteLab ]; then
+            echo "Error: Native binary SpriteLab was not created"
+            exit 1
+          fi
+          echo "Native binary created successfully"
+          ls -lh target/SpriteLab
+          file target/SpriteLab
         
       - name: Download FFmpeg for macOS ARM64
         run: |
@@ -131,8 +156,7 @@ jobs:
           
       - name: Copy artifacts
         run: |
-          cp target/SpriteLab.jar staging/SpriteLab-macos-arm64.jar
-          cp run.sh staging/ || true
+          cp target/SpriteLab staging/SpriteLab
           cp README.md staging/ || cp Readme.md staging/ || true
           cp LICENSE staging/ || true
           

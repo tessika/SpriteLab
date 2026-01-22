@@ -1,0 +1,16 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "\\Qcom/fedeiatech/spritelab/primary.fxml\\E"
+      },
+      {
+        "pattern": "\\Qcom/fedeiatech/spritelab/styles.css\\E"
+      },
+      {
+        "pattern": "\\Qcom/fedeiatech/spritelab/img/link.png\\E"
+      }
+    ]
+  },
+  "bundles": []
+}

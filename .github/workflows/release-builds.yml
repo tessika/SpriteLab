@@ -24,9 +24,19 @@ jobs:
           native-image-job-reports: 'true'
           cache: 'maven'
           
-      - name: Build with Maven
-        run: mvn -B clean package --file pom.xml
+      - name: Build Native Binary with Maven
+        run: mvn -B -Pnative clean package --file pom.xml
         
+      - name: Verify native binary was created
+        run: |
+          if [ ! -f target/SpriteLab ]; then
+            echo "Error: Native binary SpriteLab was not created"
+            exit 1
+          fi
+          echo "Native binary created successfully"
+          ls -lh target/SpriteLab
+          file target/SpriteLab
+          
       - name: Download FFmpeg for Linux
         run: |
           mkdir -p staging/bin
@@ -38,8 +48,7 @@ jobs:
           
       - name: Copy artifacts
         run: |
-          cp target/SpriteLab.jar staging/SpriteLab-linux-amd64.jar
-          cp run.sh staging/ || true
+          cp target/SpriteLab staging/SpriteLab
           cp README.md staging/ || cp Readme.md staging/ || true
           cp LICENSE staging/ || true
           
@@ -76,22 +85,31 @@ jobs:
           native-image-job-reports: 'true'
           cache: 'maven'
           
-      - name: Build with Maven
-        run: mvn -B clean package --file pom.xml
+      - name: Build Native Binary with Maven
+        run: mvn -B -Pnative clean package --file pom.xml
         
+      - name: Verify native binary was created
+        run: |
+          if [ ! -f target/SpriteLab ]; then
+            echo "Error: Native binary SpriteLab was not created"
+            exit 1
+          fi
+          echo "Native binary created successfully"
+          ls -lh target/SpriteLab
+          file target/SpriteLab
+          
       - name: Download FFmpeg for macOS ARM64
         run: |
           mkdir -p staging/bin
           # Download FFmpeg static build for macOS ARM64
-          wget -O ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip
+          curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip
           unzip -j ffmpeg.zip -d staging/bin/
           chmod +x staging/bin/ffmpeg
           rm ffmpeg.zip
           
       - name: Copy artifacts
         run: |
-          cp target/SpriteLab.jar staging/SpriteLab-macos-arm64.jar
-          cp run.sh staging/ || true
+          cp target/SpriteLab staging/SpriteLab
           cp README.md staging/ || cp Readme.md staging/ || true
           cp LICENSE staging/ || true
           
