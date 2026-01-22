@@ -44,7 +44,7 @@ jobs:
           tar -czf SpriteLab-Linux-amd64.tar.gz SpriteLab-Linux-amd64
           
       - name: Upload release asset
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ./release/SpriteLab-Linux-amd64.tar.gz
 
@@ -87,6 +87,6 @@ jobs:
           tar -czf SpriteLab-macOS-arm64.tar.gz SpriteLab-macOS-arm64
           
       - name: Upload release asset
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ./release/SpriteLab-macOS-arm64.tar.gz
