@@ -105,13 +105,6 @@
                         <configuration>
                             <imageName>SpriteLab</imageName>
                             <mainClass>${exec.mainClass}</mainClass>
-                            <buildArgs>
-                                <buildArg>--no-fallback</buildArg>
-                                <buildArg>--report-unsupported-elements-at-runtime</buildArg>
-                                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
-                                <buildArg>--initialize-at-build-time=org.controlsfx</buildArg>
-                                <buildArg>--initialize-at-run-time=com.sun.javafx.application.PlatformImpl</buildArg>
-                            </buildArgs>
                         </configuration>
                     </plugin>
                 </plugins>

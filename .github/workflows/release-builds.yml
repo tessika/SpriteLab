@@ -104,6 +104,8 @@ jobs:
         run: |
           mkdir -p staging/bin
           # Download FFmpeg static build for macOS ARM64
+          # Note: This URL redirects to the latest version. For production use,
+          # consider pinning to a specific version URL with checksum verification.
           curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip
           unzip -j ffmpeg.zip -d staging/bin/
           chmod +x staging/bin/ffmpeg
