@@ -63,7 +63,7 @@ This tool is built for **creators**. It serves as the ideal bridge for:
 
 ### Binary Releases (Recommended - No Java Required)
 
-Native binary releases are available for Linux and macOS from the [GitHub Releases](https://github.com/katamini/SpriteLab/releases) page. These are standalone executables that **do not require Java** to be installed.
+Self-contained binary releases are available for Linux and macOS from the [GitHub Releases](https://github.com/katamini/SpriteLab/releases) page. These binaries are built with jbundle and include an embedded JVM - **no Java installation required!**
 
 **Linux (amd64):**
 1. Download `SpriteLab-Linux-amd64.tar.gz` from the latest release
@@ -75,7 +75,9 @@ Native binary releases are available for Linux and macOS from the [GitHub Releas
 2. Extract: `tar -xzf SpriteLab-macOS-arm64.tar.gz`
 3. Run: `./run-native.sh` or `./SpriteLab`
 
-Both packages include FFmpeg binaries in the `bin` folder.
+Both packages include:
+- Self-contained SpriteLab binary with embedded JVM (built with jbundle)
+- FFmpeg binaries in the `bin` folder
 
 ### Alternative Installation (RAR Release - Windows)
 
@@ -89,23 +91,41 @@ Both packages include FFmpeg binaries in the `bin` folder.
 
 * **Language:** Java 21 (JavaFX).
 * **Dependencies:** FFmpeg (Local binaries required in `/bin`).
+* **Build Tool:** jbundle (creates self-contained binaries with no JVM required).
 * **License:** MIT.
 
-**Building from source:**
+**Building from source with jbundle:**
+
+jbundle packages your Java application into a self-contained binary with an embedded JVM - no Java installation required to run!
 
 ```bash
-# Build JAR (requires Java 21)
-mvn clean package
+# Install jbundle (requires Rust/Cargo)
+git clone https://github.com/avelino/jbundle.git
+cd jbundle
+cargo install --path .
 
-# Build native binary (requires GraalVM 21 with native-image)
-mvn -Pnative clean package
+# Build self-contained binary (no JVM needed to run!)
+cd /path/to/SpriteLab
+jbundle build --input . --output ./dist/SpriteLab --java-version 21 --target linux-x64 --profile cli
+
+# For macOS ARM64
+jbundle build --input . --output ./dist/SpriteLab --java-version 21 --target macos-aarch64 --profile cli
+
+# The output binary includes everything needed to run - no Java required!
+```
+
+**Alternative: Traditional Maven Build (requires Java 21 to run):**
+
+```bash
+# Build JAR (requires Java 21 to run)
+mvn clean package
 ```
 
 ### GitHub Actions & Release Process
 
-The repository includes automated build workflows:
+The repository includes automated build workflows using jbundle:
 
-* **CI Build** (`.github/workflows/ci-build.yml`): Runs on every push/PR to test both JAR and native builds for Linux and macOS
+* **CI Build** (`.github/workflows/ci-build.yml`): Runs on every push/PR to build self-contained binaries for Linux and macOS using jbundle
 * **Release Builds** (`.github/workflows/release-builds.yml`): Automatically creates distribution packages on GitHub releases
 
 **To create a new release:**
@@ -113,16 +133,21 @@ The repository includes automated build workflows:
 2. Push the tag: `git push origin v0.3.2`
 3. Create a GitHub release from the tag
 4. The workflow will automatically build and attach:
-   - `SpriteLab-Linux-amd64.tar.gz` (Linux native binary + FFmpeg)
-   - `SpriteLab-macOS-arm64.tar.gz` (macOS ARM64 native binary + FFmpeg)
+   - `SpriteLab-Linux-amd64.tar.gz` (Self-contained Linux binary + FFmpeg - no JVM required!)
+   - `SpriteLab-macOS-arm64.tar.gz` (Self-contained macOS ARM64 binary + FFmpeg - no JVM required!)
 
-**GraalVM Native Image Configuration:**
+Each release package includes:
+- Self-contained SpriteLab binary (with embedded JVM)
+- FFmpeg binary
+- Launch script (`run-native.sh`)
+- README and LICENSE files
 
-JavaFX applications require special configuration for GraalVM native-image. The configuration files are located in:
-- `src/main/resources/META-INF/native-image/com.fedeiatech.spritelab/SpriteLab/`
-  - `reflect-config.json` - Reflection configuration for JavaFX internal classes
-  - `jni-config.json` - JNI configuration for native JavaFX components
-  - `resource-config.json` - Resource includes for FXML, CSS, and images
-  - `native-image.properties` - Build arguments and class initialization settings
+**About jbundle:**
+
+jbundle (https://github.com/avelino/jbundle) is a tool that packages Java applications into self-contained binaries with an embedded JDK. The resulting binaries:
+- Run anywhere without requiring Java installation
+- Include optimized startup with AppCDS by default
+- Support CLI profile for fast startup
+- Work across platforms (Linux, macOS, Windows)
 
 Developed by **FedeiaTech**.

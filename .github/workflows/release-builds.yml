@@ -18,28 +18,32 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: Set up GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          java-version: '21'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          native-image-job-reports: 'true'
-          cache: 'maven'
           
-      - name: Build Native Binary with Maven
-        run: mvn -B -Pnative clean package --file pom.xml
-        
-      - name: Verify native binary was created
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          
+      - name: Install jbundle from source
         run: |
-          if [ ! -f target/SpriteLab ]; then
-            echo "Error: Native binary SpriteLab was not created"
+          git clone https://github.com/avelino/jbundle.git /tmp/jbundle
+          cd /tmp/jbundle
+          cargo install --path .
+          
+      - name: Build with jbundle
+        run: |
+          mkdir -p dist
+          jbundle build --input . --output dist/SpriteLab --java-version 21 --target linux-x64 --profile cli
+        
+      - name: Verify jbundle binary was created
+        run: |
+          if [ ! -f dist/SpriteLab ]; then
+            echo "Error: jbundle binary SpriteLab was not created"
             exit 1
           fi
-          echo "Native binary created successfully"
-          ls -lh target/SpriteLab
-          file target/SpriteLab
+          echo "jbundle binary created successfully"
+          ls -lh dist/SpriteLab
+          file dist/SpriteLab
           
       - name: Download FFmpeg for Linux
         run: |
@@ -52,7 +56,7 @@ jobs:
           
       - name: Copy artifacts
         run: |
-          cp target/SpriteLab staging/SpriteLab
+          cp dist/SpriteLab staging/SpriteLab
           cp run-native.sh staging/ || true
           cp README.md staging/ || cp Readme.md staging/ || true
           cp LICENSE staging/ || true
@@ -81,28 +85,32 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: Set up GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          java-version: '21'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          native-image-job-reports: 'true'
-          cache: 'maven'
           
-      - name: Build Native Binary with Maven
-        run: mvn -B -Pnative clean package --file pom.xml
-        
-      - name: Verify native binary was created
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          
+      - name: Install jbundle from source
         run: |
-          if [ ! -f target/SpriteLab ]; then
-            echo "Error: Native binary SpriteLab was not created"
+          git clone https://github.com/avelino/jbundle.git /tmp/jbundle
+          cd /tmp/jbundle
+          cargo install --path .
+          
+      - name: Build with jbundle
+        run: |
+          mkdir -p dist
+          jbundle build --input . --output dist/SpriteLab --java-version 21 --target macos-aarch64 --profile cli
+        
+      - name: Verify jbundle binary was created
+        run: |
+          if [ ! -f dist/SpriteLab ]; then
+            echo "Error: jbundle binary SpriteLab was not created"
             exit 1
           fi
-          echo "Native binary created successfully"
-          ls -lh target/SpriteLab
-          file target/SpriteLab
+          echo "jbundle binary created successfully"
+          ls -lh dist/SpriteLab
+          file dist/SpriteLab
           
       - name: Download FFmpeg for macOS ARM64
         run: |
@@ -117,7 +125,7 @@ jobs:
           
       - name: Copy artifacts
         run: |
-          cp target/SpriteLab staging/SpriteLab
+          cp dist/SpriteLab staging/SpriteLab
           cp run-native.sh staging/ || true
           cp README.md staging/ || cp Readme.md staging/ || true
           cp LICENSE staging/ || true
