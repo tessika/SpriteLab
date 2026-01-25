@@ -47,6 +47,41 @@ jobs:
           echo "jbundle binary created successfully"
           ls -lh dist/SpriteLab
           file dist/SpriteLab
+          
+      - name: Test binary launches (headless)
+        run: |
+          # Install Xvfb for headless testing of JavaFX GUI
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgtk-3-0
+          
+          # Make binary executable
+          chmod +x dist/SpriteLab
+          
+          # Try to launch the app in headless mode with timeout
+          # JavaFX apps will start and we can verify no immediate crashes
+          echo "Testing binary launch..."
+          timeout 10s xvfb-run -a dist/SpriteLab &
+          LAUNCH_PID=$!
+          sleep 5
+          
+          # Check if process is still running (means it started successfully)
+          if ps -p $LAUNCH_PID > /dev/null 2>&1; then
+            echo "✓ Binary launched successfully and is running"
+            kill $LAUNCH_PID || true
+            exit 0
+          else
+            # Check if it exited with error
+            wait $LAUNCH_PID
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 124 ]; then
+              # Timeout means it was still running - success!
+              echo "✓ Binary launched successfully (timed out as expected)"
+              exit 0
+            else
+              echo "✗ Binary failed to launch or crashed immediately (exit code: $EXIT_CODE)"
+              exit 1
+            fi
+          fi
         
       - name: Download FFmpeg for Linux
         run: |
@@ -124,6 +159,37 @@ jobs:
           echo "jbundle binary created successfully"
           ls -lh dist/SpriteLab
           file dist/SpriteLab
+          
+      - name: Test binary launches
+        run: |
+          # Make binary executable
+          chmod +x dist/SpriteLab
+          
+          # Try to launch the app with timeout
+          # On macOS, JavaFX apps can run in headless-ish mode
+          echo "Testing binary launch..."
+          timeout 10s dist/SpriteLab &
+          LAUNCH_PID=$!
+          sleep 5
+          
+          # Check if process is still running (means it started successfully)
+          if ps -p $LAUNCH_PID > /dev/null 2>&1; then
+            echo "✓ Binary launched successfully and is running"
+            kill $LAUNCH_PID || true
+            exit 0
+          else
+            # Check if it exited with error
+            wait $LAUNCH_PID
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 124 ]; then
+              # Timeout means it was still running - success!
+              echo "✓ Binary launched successfully (timed out as expected)"
+              exit 0
+            else
+              echo "✗ Binary failed to launch or crashed immediately (exit code: $EXIT_CODE)"
+              exit 1
+            fi
+          fi
         
       - name: Download FFmpeg for macOS ARM64
         run: |
