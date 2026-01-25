@@ -58,30 +58,34 @@ jobs:
           # Make binary executable
           chmod +x dist/SpriteLab
           
-          # Try to launch the app in headless mode with timeout
+          # Try to launch the app in headless mode
           # JavaFX apps will start and we can verify no immediate crashes
           echo "Testing binary launch..."
-          timeout 10s xvfb-run -a dist/SpriteLab &
+          
+          # Run in background and capture output
+          xvfb-run -a dist/SpriteLab > /tmp/spritelab.log 2>&1 &
           LAUNCH_PID=$!
-          sleep 5
+          
+          # Wait for app to start (give it time to initialize)
+          echo "Waiting for application to start..."
+          sleep 8
           
           # Check if process is still running (means it started successfully)
           if ps -p $LAUNCH_PID > /dev/null 2>&1; then
-            echo "✓ Binary launched successfully and is running"
-            kill $LAUNCH_PID || true
+            echo "✓ Binary launched successfully and is running (PID: $LAUNCH_PID)"
+            # Clean up
+            kill $LAUNCH_PID 2>/dev/null || true
+            sleep 1
+            kill -9 $LAUNCH_PID 2>/dev/null || true
             exit 0
           else
-            # Check if it exited with error
+            # Process already exited - check why
             wait $LAUNCH_PID
             EXIT_CODE=$?
-            if [ $EXIT_CODE -eq 124 ]; then
-              # Timeout means it was still running - success!
-              echo "✓ Binary launched successfully (timed out as expected)"
-              exit 0
-            else
-              echo "✗ Binary failed to launch or crashed immediately (exit code: $EXIT_CODE)"
-              exit 1
-            fi
+            echo "✗ Binary exited with code: $EXIT_CODE"
+            echo "--- Application log ---"
+            cat /tmp/spritelab.log || true
+            exit 1
           fi
         
       - name: Download FFmpeg for Linux
@@ -167,30 +171,34 @@ jobs:
           # Make binary executable
           chmod +x dist/SpriteLab
           
-          # Try to launch the app with timeout
-          # On macOS, JavaFX apps can run in headless-ish mode
+          # Try to launch the app
+          # On macOS, JavaFX apps can run but may need display access
           echo "Testing binary launch..."
-          timeout 10s dist/SpriteLab &
+          
+          # Run in background and capture output
+          dist/SpriteLab > /tmp/spritelab.log 2>&1 &
           LAUNCH_PID=$!
-          sleep 5
+          
+          # Wait for app to start (give it time to initialize)
+          echo "Waiting for application to start..."
+          sleep 8
           
           # Check if process is still running (means it started successfully)
           if ps -p $LAUNCH_PID > /dev/null 2>&1; then
-            echo "✓ Binary launched successfully and is running"
-            kill $LAUNCH_PID || true
+            echo "✓ Binary launched successfully and is running (PID: $LAUNCH_PID)"
+            # Clean up
+            kill $LAUNCH_PID 2>/dev/null || true
+            sleep 1
+            kill -9 $LAUNCH_PID 2>/dev/null || true
             exit 0
           else
-            # Check if it exited with error
+            # Process already exited - check why
             wait $LAUNCH_PID
             EXIT_CODE=$?
-            if [ $EXIT_CODE -eq 124 ]; then
-              # Timeout means it was still running - success!
-              echo "✓ Binary launched successfully (timed out as expected)"
-              exit 0
-            else
-              echo "✗ Binary failed to launch or crashed immediately (exit code: $EXIT_CODE)"
-              exit 1
-            fi
+            echo "✗ Binary exited with code: $EXIT_CODE"
+            echo "--- Application log ---"
+            cat /tmp/spritelab.log || true
+            exit 1
           fi
         
       - name: Download FFmpeg for macOS ARM64

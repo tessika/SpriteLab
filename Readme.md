@@ -156,6 +156,6 @@ jbundle (https://github.com/avelino/jbundle) is a tool that packages Java applic
 - Run anywhere without requiring Java installation
 - Include optimized startup with AppCDS by default
 - Support CLI profile for fast startup
-- Work across platforms (Linux, macOS, Windows)
+- Work across platforms (Linux and macOS currently supported)
 
 Developed by **FedeiaTech**.
