@@ -21,39 +21,78 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: Set up GraalVM
-        uses: graalvm/setup-graalvm@v1
+          
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          cache: 'maven'
+          distribution: 'temurin'
           
-      - name: Build JAR with Maven
-        run: mvn -B clean package --file pom.xml
-        
-      - name: Verify JAR was created
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          
+      - name: Install jbundle from source
         run: |
-          if [ ! -f target/SpriteLab.jar ]; then
-            echo "Error: SpriteLab.jar was not created"
+          git clone https://github.com/avelino/jbundle.git /tmp/jbundle
+          cd /tmp/jbundle
+          git checkout f722ab543a57e7fc496656c72198c71efe52e89c
+          cargo install --path .
+          
+      - name: Build with jbundle
+        run: |
+          mkdir -p dist
+          jbundle build --input . --output dist/SpriteLab --java-version 21 --target linux-x64 --profile cli
+        
+      - name: Verify jbundle binary was created
+        run: |
+          if [ ! -f dist/SpriteLab ]; then
+            echo "Error: jbundle binary SpriteLab was not created"
             exit 1
           fi
-          echo "JAR build successful: SpriteLab.jar created"
-          ls -lh target/SpriteLab.jar
+          echo "jbundle binary created successfully"
+          ls -lh dist/SpriteLab
+          file dist/SpriteLab
           
-      - name: Build Native Binary with Maven
-        run: mvn -B -Pnative clean package --file pom.xml
-        
-      - name: Verify native binary was created
+      - name: Test binary launches (headless)
         run: |
-          if [ ! -f target/SpriteLab ]; then
-            echo "Error: Native binary SpriteLab was not created"
+          # Install Xvfb for headless testing of JavaFX GUI
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgtk-3-0
+          
+          # Make binary executable
+          chmod +x dist/SpriteLab
+          
+          # Try to launch the app in headless mode
+          # JavaFX apps will start and we can verify no immediate crashes
+          echo "Testing binary launch..."
+          
+          # Run in background and capture output
+          xvfb-run -a dist/SpriteLab > /tmp/spritelab.log 2>&1 &
+          LAUNCH_PID=$!
+          
+          # Wait for app to start (give it time to initialize)
+          echo "Waiting for application to start..."
+          sleep 8
+          
+          # Check if process is still running (means it started successfully)
+          if ps -p $LAUNCH_PID > /dev/null 2>&1; then
+            echo "✓ Binary launched successfully and is running (PID: $LAUNCH_PID)"
+            # Clean up
+            kill $LAUNCH_PID 2>/dev/null || true
+            sleep 1
+            kill -9 $LAUNCH_PID 2>/dev/null || true
+            exit 0
+          else
+            # Process already exited - check why
+            wait $LAUNCH_PID
+            EXIT_CODE=$?
+            echo "✗ Binary exited with code: $EXIT_CODE"
+            echo "--- Application log ---"
+            cat /tmp/spritelab.log || true
             exit 1
           fi
-          echo "Native binary created successfully"
-          ls -lh target/SpriteLab
-          file target/SpriteLab
         
       - name: Download FFmpeg for Linux
         run: |
@@ -74,7 +113,7 @@ jobs:
           
       - name: Copy artifacts
         run: |
-          cp target/SpriteLab staging/SpriteLab
+          cp dist/SpriteLab staging/SpriteLab
           cp run-native.sh staging/ || true
           cp README.md staging/ || cp Readme.md staging/ || true
           cp LICENSE staging/ || true
@@ -105,39 +144,74 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: Set up GraalVM
-        uses: graalvm/setup-graalvm@v1
+          
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          cache: 'maven'
+          distribution: 'temurin'
           
-      - name: Build JAR with Maven
-        run: mvn -B clean package --file pom.xml
-        
-      - name: Verify JAR was created
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          
+      - name: Install jbundle from source
         run: |
-          if [ ! -f target/SpriteLab.jar ]; then
-            echo "Error: SpriteLab.jar was not created"
+          git clone https://github.com/avelino/jbundle.git /tmp/jbundle
+          cd /tmp/jbundle
+          git checkout f722ab543a57e7fc496656c72198c71efe52e89c
+          cargo install --path .
+          
+      - name: Build with jbundle
+        run: |
+          mkdir -p dist
+          jbundle build --input . --output dist/SpriteLab --java-version 21 --target macos-aarch64 --profile cli
+        
+      - name: Verify jbundle binary was created
+        run: |
+          if [ ! -f dist/SpriteLab ]; then
+            echo "Error: jbundle binary SpriteLab was not created"
             exit 1
           fi
-          echo "JAR build successful: SpriteLab.jar created"
-          ls -lh target/SpriteLab.jar
+          echo "jbundle binary created successfully"
+          ls -lh dist/SpriteLab
+          file dist/SpriteLab
           
-      - name: Build Native Binary with Maven
-        run: mvn -B -Pnative clean package --file pom.xml
-        
-      - name: Verify native binary was created
+      - name: Test binary launches
         run: |
-          if [ ! -f target/SpriteLab ]; then
-            echo "Error: Native binary SpriteLab was not created"
+          # Make binary executable
+          chmod +x dist/SpriteLab
+          
+          # Try to launch the app
+          # On macOS, JavaFX apps can run but may need display access
+          echo "Testing binary launch..."
+          
+          # Run in background and capture output
+          dist/SpriteLab > /tmp/spritelab.log 2>&1 &
+          LAUNCH_PID=$!
+          
+          # Wait for app to start (give it time to initialize)
+          echo "Waiting for application to start..."
+          sleep 8
+          
+          # Check if process is still running (means it started successfully)
+          if ps -p $LAUNCH_PID > /dev/null 2>&1; then
+            echo "✓ Binary launched successfully and is running (PID: $LAUNCH_PID)"
+            # Clean up
+            kill $LAUNCH_PID 2>/dev/null || true
+            sleep 1
+            kill -9 $LAUNCH_PID 2>/dev/null || true
+            exit 0
+          else
+            # Process already exited - check why
+            wait $LAUNCH_PID
+            EXIT_CODE=$?
+            echo "✗ Binary exited with code: $EXIT_CODE"
+            echo "--- Application log ---"
+            cat /tmp/spritelab.log || true
             exit 1
           fi
-          echo "Native binary created successfully"
-          ls -lh target/SpriteLab
-          file target/SpriteLab
         
       - name: Download FFmpeg for macOS ARM64
         run: |
@@ -160,7 +234,7 @@ jobs:
           
       - name: Copy artifacts
         run: |
-          cp target/SpriteLab staging/SpriteLab
+          cp dist/SpriteLab staging/SpriteLab
           cp run-native.sh staging/ || true
           cp README.md staging/ || cp Readme.md staging/ || true
           cp LICENSE staging/ || true
