@@ -144,3 +144,73 @@ jobs:
           
       - name: Clean staging
         run: rm -fr staging
+
+  build-windows:
+    name: Build Windows (x64)
+    runs-on: windows-latest
+    permissions:
+      contents: write  # Required to upload release assets
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+          
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          
+      - name: Install jbundle from source
+        run: |
+          git clone https://github.com/avelino/jbundle.git C:\tmp\jbundle
+          cd C:\tmp\jbundle
+          cargo install --path .
+        shell: pwsh
+          
+      - name: Build with jbundle
+        run: |
+          New-Item -ItemType Directory -Force -Path dist
+          jbundle build --input . --output dist/SpriteLab.exe --java-version 21 --target windows-x64 --profile cli
+        shell: pwsh
+        
+      - name: Verify jbundle binary was created
+        run: |
+          if (-not (Test-Path dist/SpriteLab.exe)) {
+            Write-Error "Error: jbundle binary SpriteLab.exe was not created"
+            exit 1
+          }
+          Write-Host "jbundle binary created successfully"
+          Get-Item dist/SpriteLab.exe
+        shell: pwsh
+          
+      - name: Download FFmpeg for Windows
+        run: |
+          New-Item -ItemType Directory -Force -Path staging/bin
+          Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" -OutFile ffmpeg.zip
+          Expand-Archive ffmpeg.zip -DestinationPath .
+          Move-Item ffmpeg-*-essentials_build/bin/ffmpeg.exe staging/bin/ffmpeg.exe
+          Remove-Item ffmpeg.zip
+          Remove-Item -Recurse ffmpeg-*-essentials_build
+        shell: pwsh
+          
+      - name: Copy artifacts
+        run: |
+          Copy-Item dist/SpriteLab.exe staging/SpriteLab.exe
+          if (Test-Path README.md) { Copy-Item README.md staging/ }
+          if (Test-Path Readme.md) { Copy-Item Readme.md staging/README.md }
+          if (Test-Path LICENSE) { Copy-Item LICENSE staging/ }
+        shell: pwsh
+          
+      - name: Create release package
+        run: |
+          Compress-Archive -Path staging/* -DestinationPath SpriteLab-Windows-x64.zip
+        shell: pwsh
+          
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: SpriteLab-Windows-x64.zip
+          
+      - name: Clean staging
+        run: Remove-Item -Recurse -Force staging
+        shell: pwsh
