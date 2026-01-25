@@ -63,7 +63,7 @@ This tool is built for **creators**. It serves as the ideal bridge for:
 
 ### Binary Releases (Recommended - No Java Required)
 
-Self-contained binary releases are available for Linux, macOS, and Windows from the [GitHub Releases](https://github.com/katamini/SpriteLab/releases) page. These binaries are built with jbundle and include an embedded JVM - **no Java installation required!**
+Self-contained binary releases are available for Linux and macOS from the [GitHub Releases](https://github.com/katamini/SpriteLab/releases) page. These binaries are built with jbundle and include an embedded JVM - **no Java installation required!**
 
 **Linux (amd64):**
 1. Download `SpriteLab-Linux-amd64.tar.gz` from the latest release
@@ -75,14 +75,17 @@ Self-contained binary releases are available for Linux, macOS, and Windows from 
 2. Extract: `tar -xzf SpriteLab-macOS-arm64.tar.gz`
 3. Run: `./run-native.sh` or `./SpriteLab`
 
-**Windows (x64):**
-1. Download `SpriteLab-Windows-x64.zip` from the latest release
-2. Extract the ZIP file
-3. Run: `SpriteLab.exe`
-
-All packages include:
+Both packages include:
 - Self-contained SpriteLab binary with embedded JVM (built with jbundle)
 - FFmpeg binaries in the `bin` folder
+
+### Alternative Installation (Windows)
+
+For Windows, jbundle support is not yet available. You can use the traditional JAR-based release:
+1. Download the `.rar` file from [Itch.io](https://fedeiatech.itch.io/spritelab).
+2. Extract the contents (Ensure the `bin` folder containing `ffmpeg.exe` is in the same directory).
+3. Requires Java 21 or higher to be installed
+4. Run `SpriteLab.exe` or `java -jar SpriteLab.jar`
 
 ---
 
@@ -101,6 +104,8 @@ jbundle packages your Java application into a self-contained binary with an embe
 # Install jbundle (requires Rust/Cargo)
 git clone https://github.com/avelino/jbundle.git
 cd jbundle
+# Pin to a specific version for reproducible builds
+git checkout f722ab543a57e7fc496656c72198c71efe52e89c
 cargo install --path .
 
 # Build self-contained binary (no JVM needed to run!)
@@ -112,8 +117,7 @@ jbundle build --input . --output ./dist/SpriteLab --java-version 21 --target lin
 # For macOS ARM64 (Apple Silicon)
 jbundle build --input . --output ./dist/SpriteLab --java-version 21 --target macos-aarch64 --profile cli
 
-# For Windows (x64)
-jbundle build --input . --output ./dist/SpriteLab.exe --java-version 21 --target windows-x64 --profile cli
+# Note: Windows is not yet supported by jbundle
 
 # The output binary includes everything needed to run - no Java required!
 ```
@@ -129,7 +133,7 @@ mvn clean package
 
 The repository includes automated build workflows using jbundle:
 
-* **CI Build** (`.github/workflows/ci-build.yml`): Runs on every push/PR to build self-contained binaries for Linux, macOS, and Windows using jbundle
+* **CI Build** (`.github/workflows/ci-build.yml`): Runs on every push/PR to build and test self-contained binaries for Linux and macOS
 * **Release Builds** (`.github/workflows/release-builds.yml`): Automatically creates distribution packages on GitHub releases
 
 **To create a new release:**
@@ -139,12 +143,11 @@ The repository includes automated build workflows using jbundle:
 4. The workflow will automatically build and attach:
    - `SpriteLab-Linux-amd64.tar.gz` (Self-contained Linux binary + FFmpeg - no JVM required!)
    - `SpriteLab-macOS-arm64.tar.gz` (Self-contained macOS ARM64 binary + FFmpeg - no JVM required!)
-   - `SpriteLab-Windows-x64.zip` (Self-contained Windows binary + FFmpeg - no JVM required!)
 
 Each release package includes:
 - Self-contained SpriteLab binary (with embedded JVM)
 - FFmpeg binary
-- Launch script (`run-native.sh` for Linux/macOS)
+- Launch script (`run-native.sh`)
 - README and LICENSE files
 
 **About jbundle:**

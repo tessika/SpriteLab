@@ -31,6 +31,7 @@ jobs:
         run: |
           git clone https://github.com/avelino/jbundle.git /tmp/jbundle
           cd /tmp/jbundle
+          git checkout f722ab543a57e7fc496656c72198c71efe52e89c
           cargo install --path .
           
       - name: Build with jbundle
@@ -143,6 +144,7 @@ jobs:
         run: |
           git clone https://github.com/avelino/jbundle.git /tmp/jbundle
           cd /tmp/jbundle
+          git checkout f722ab543a57e7fc496656c72198c71efe52e89c
           cargo install --path .
           
       - name: Build with jbundle
@@ -233,84 +235,3 @@ jobs:
           
       - name: Clean staging
         run: rm -fr staging
-
-  build-windows:
-    name: Build and Test - Windows (x64)
-    runs-on: windows-latest
-    permissions:
-      contents: read
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-          
-      - name: Set up Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: stable
-          
-      - name: Install jbundle from source
-        run: |
-          git clone https://github.com/avelino/jbundle.git C:\tmp\jbundle
-          cd C:\tmp\jbundle
-          cargo install --path .
-        shell: pwsh
-          
-      - name: Build with jbundle
-        run: |
-          New-Item -ItemType Directory -Force -Path dist
-          jbundle build --input . --output dist/SpriteLab.exe --java-version 21 --target windows-x64 --profile cli
-        shell: pwsh
-        
-      - name: Verify jbundle binary was created
-        run: |
-          if (-not (Test-Path dist/SpriteLab.exe)) {
-            Write-Error "Error: jbundle binary SpriteLab.exe was not created"
-            exit 1
-          }
-          Write-Host "jbundle binary created successfully"
-          Get-Item dist/SpriteLab.exe
-        shell: pwsh
-          
-      - name: Download FFmpeg for Windows
-        run: |
-          New-Item -ItemType Directory -Force -Path staging/bin
-          Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" -OutFile ffmpeg.zip
-          Expand-Archive ffmpeg.zip -DestinationPath .
-          Move-Item ffmpeg-*-essentials_build/bin/ffmpeg.exe staging/bin/ffmpeg.exe
-          Remove-Item ffmpeg.zip
-          Remove-Item -Recurse ffmpeg-*-essentials_build
-        shell: pwsh
-          
-      - name: Verify FFmpeg
-        run: |
-          if (-not (Test-Path staging/bin/ffmpeg.exe)) {
-            Write-Error "Error: FFmpeg binary not found"
-            exit 1
-          }
-          & staging/bin/ffmpeg.exe -version | Select-Object -First 1
-        shell: pwsh
-          
-      - name: Copy artifacts
-        run: |
-          Copy-Item dist/SpriteLab.exe staging/SpriteLab.exe
-          if (Test-Path README.md) { Copy-Item README.md staging/ }
-          if (Test-Path Readme.md) { Copy-Item Readme.md staging/README.md }
-          if (Test-Path LICENSE) { Copy-Item LICENSE staging/ }
-        shell: pwsh
-          
-      - name: Create test package
-        run: |
-          Compress-Archive -Path staging/* -DestinationPath SpriteLab-Windows-x64.zip
-        shell: pwsh
-          
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: SpriteLab-Windows-x64
-          path: SpriteLab-Windows-x64.zip
-          retention-days: 7
-          
-      - name: Clean staging
-        run: Remove-Item -Recurse -Force staging
-        shell: pwsh
